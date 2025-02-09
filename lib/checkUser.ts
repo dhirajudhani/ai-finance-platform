@@ -1,17 +1,17 @@
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { db } from "./prisma";
 
 export const checkUser = async () => {
-  const { userId } = auth();
+  const user = await currentUser();
 
-  if (!userId) {
+  if (!user) {
     return null;
   }
 
   try {
     const loggedInUser = await db.user.findUnique({
       where: {
-        clerkUserId: userId,
+        clerkUserId: user.id,
       },
     });
 
@@ -19,16 +19,14 @@ export const checkUser = async () => {
       return loggedInUser;
     }
 
-    // Get user details from Clerk
-    const user = await clerkClient.users.getUser(userId);
     const name = `${user.firstName} ${user.lastName}`;
 
     const newUser = await db.user.create({
       data: {
-        clerkUserId: userId,
-        email: user.emailAddresses[0].emailAddress,
+        clerkUserId: user.id,
         name,
         imageUrl: user.imageUrl,
+        email: user.emailAddresses[0].emailAddress,
       },
     });
 
@@ -41,4 +39,5 @@ export const checkUser = async () => {
     }
     return null;
   }
+
 };
