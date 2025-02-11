@@ -4,19 +4,19 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { Decimal } from "@prisma/client/runtime/library";
 
-export enum AccountType {
-  CURRENT = "CURRENT",
-  SAVINGS = "SAVINGS",
-}
+// export enum AccountType {
+//   CURRENT = "CURRENT",
+//   SAVINGS = "SAVINGS",
+// }
 
-interface DataProps {
-  name: string;
-  balance: number;
-  isDefault: boolean;
-  type: AccountType;
-}
+// interface DataProps {
+//   name: string;
+//   balance: number;
+//   isDefault: boolean;
+//   type: AccountType;
+// }
 
-export async function createAccount(data: DataProps) {
+export async function createAccount(data) {
   try {
     const { userId } = await auth();
     if (!userId) {
