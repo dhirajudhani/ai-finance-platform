@@ -71,3 +71,34 @@ export async function createAccount(data) {
     throw new Error("An unknown error occurred");
   }
 }
+
+export async function getUserAccount(){
+  const {userId} = await auth();
+  if(!userId) throw new Error("Unauthorized")
+
+    const user = await db.user.findUnique({
+      where: {
+        clerkUserId: userId,
+      },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const accounts = db.account.findMany({
+      where:{
+        userId: user.id
+      },
+      orderBy:{createdAt : "desc"},
+      include: {
+        _count:{
+          select:{
+            transactions: true
+          }
+        }
+      }
+    })
+
+    return accounts
+}
