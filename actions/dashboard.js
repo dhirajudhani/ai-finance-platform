@@ -16,6 +16,23 @@ import { Decimal } from "@prisma/client/runtime/library";
 //   type: AccountType;
 // }
 
+const serializeDecimal = (obj) => {
+  if (!obj) return obj;
+  
+  const serialized = { ...obj };
+  
+  // Convert known Decimal fields to numbers
+  if (obj.amount) serialized.amount = obj.amount.toNumber();
+  if (obj.balance) serialized.balance = obj.balance.toNumber();
+  
+  // Handle nested transactions if they exist
+  if (obj.transactions) {
+    serialized.transactions = obj.transactions.map(serializeDecimal);
+  }
+  
+  return serialized;
+};
+
 export async function createAccount(data) {
   try {
     const { userId } = await auth();
@@ -63,11 +80,8 @@ export async function createAccount(data) {
         isDefault: shouldBeDefault,
       },
     });
-    // Convert Decimal to number before returning
-    return {
-      ...account,
-      balance: account.balance.toNumber()
-    };
+
+    return serializeDecimal(account);
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(error.message);
@@ -104,9 +118,5 @@ export async function getUserAccount(){
       }
     });
 
-    // Convert Decimal values to numbers before returning
-    return accounts.map(account => ({
-      ...account,
-      balance: account.balance.toNumber()
-    }));
+    return accounts.map(serializeDecimal);
 }
