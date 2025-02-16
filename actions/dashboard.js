@@ -63,7 +63,11 @@ export async function createAccount(data) {
         isDefault: shouldBeDefault,
       },
     });
-    return account
+    // Convert Decimal to number before returning
+    return {
+      ...account,
+      balance: account.balance.toNumber()
+    };
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(error.message);
@@ -86,7 +90,7 @@ export async function getUserAccount(){
       throw new Error("User not found");
     }
 
-    const accounts = db.account.findMany({
+    const accounts = await db.account.findMany({
       where:{
         userId: user.id
       },
@@ -98,7 +102,11 @@ export async function getUserAccount(){
           }
         }
       }
-    })
+    });
 
-    return accounts
+    // Convert Decimal values to numbers before returning
+    return accounts.map(account => ({
+      ...account,
+      balance: account.balance.toNumber()
+    }));
 }
