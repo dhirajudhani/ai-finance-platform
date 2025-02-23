@@ -48,7 +48,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 const RECURRING_INTERVALS: any = {
   DAILY: "Daily",
@@ -68,7 +68,47 @@ const TransactionTable = ({ transactions }: any) => {
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [recurringFilter, setRecurringFilter] = useState<string>("");
 
-  const filteredAndSortedTransactions = transactions;
+  const filteredAndSortedTransactions = useMemo(() => {
+    let result = [...transactions]
+
+    if(searchTerm){
+      const searchLower = searchTerm.toLowerCase();
+      result = result.filter((transaction) => transaction.description?.toLowerCase().includes(searchLower))
+    }
+
+    if(recurringFilter){
+      result = result.filter((transaction) => {
+        if(recurringFilter === "recurring") return transaction.isRecurring;
+        return !transaction.isRecurring
+      })
+    }
+
+    if(typeFilter){
+      result = result.filter((transaction) => transaction.type === typeFilter)
+    }
+    result.sort((a: any, b: any): number => {
+      let comparison = 0;
+      
+      switch (sortConfig.field) {
+        case "date":
+          comparison = (new Date(a.date)).getTime() - (new Date(b.date)).getTime();
+          break;
+        case "amount":
+          comparison = Number(a.amount) - Number(b.amount);
+          break;
+        case "category":
+          comparison = String(a.category).localeCompare(String(b.category));
+          break;
+        default:
+          comparison = 0
+          break;
+      }
+      
+      return sortConfig.direction === "asc" ? comparison : -comparison;
+    });
+    // console.log("result", result)
+    return result
+  },[transactions, searchTerm, typeFilter, recurringFilter, sortConfig]);
 
   const handleSort = (field: any) => {
     setSortConfig((current) => ({
