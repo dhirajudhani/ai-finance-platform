@@ -23,7 +23,6 @@ import {
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -41,6 +40,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   Clock,
   MoreHorizontalIcon,
@@ -62,6 +63,7 @@ const RECURRING_INTERVALS: any = {
 };
 
 const TransactionTable = ({ transactions }: any) => {
+  const ITEMS_PER_PAGE = 10;
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState({
     field: "date",
@@ -71,6 +73,7 @@ const TransactionTable = ({ transactions }: any) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [recurringFilter, setRecurringFilter] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   const {
     loading: deleteLoading,
@@ -109,6 +112,7 @@ const TransactionTable = ({ transactions }: any) => {
     if (typeFilter) {
       result = result.filter((transaction) => transaction.type === typeFilter);
     }
+
     result.sort((a: any, b: any): number => {
       let comparison = 0;
 
@@ -129,30 +133,45 @@ const TransactionTable = ({ transactions }: any) => {
 
       return sortConfig.direction === "asc" ? comparison : -comparison;
     });
-    // console.log("result", result)
+
     return result;
   }, [transactions, searchTerm, typeFilter, recurringFilter, sortConfig]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(
+    filteredAndSortedTransactions.length / ITEMS_PER_PAGE
+  );
+
+  // Get current page items
+  const currentTransactions = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredAndSortedTransactions.slice(
+      startIndex,
+      startIndex + ITEMS_PER_PAGE
+    );
+  }, [filteredAndSortedTransactions, currentPage, ITEMS_PER_PAGE]);
 
   const handleSort = (field: any) => {
     setSortConfig((current) => ({
       field,
       direction:
-        current.field == field && current.direction === "asc" ? "desc" : "asc",
+        current.field === field && current.direction === "asc" ? "desc" : "asc",
     }));
   };
 
   const handleSelect = (id: any) => {
     setSelectedIds((current) =>
       current.includes(id)
-        ? current.filter((item) => item != id)
+        ? current.filter((item) => item !== id)
         : [...current, id]
     );
   };
+
   const handleSelectAll = () => {
     setSelectedIds((current) =>
-      current.length === filteredAndSortedTransactions.length
+      current.length === currentTransactions.length
         ? []
-        : filteredAndSortedTransactions.map((t: any) => t.id)
+        : currentTransactions.map((t: any) => t.id)
     );
   };
 
@@ -166,13 +185,26 @@ const TransactionTable = ({ transactions }: any) => {
     setSearchTerm("");
     setTypeFilter("");
     setRecurringFilter("");
-    setSelectedIds([]);
+    setCurrentPage(1);
   };
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setSelectedIds([]); // Clear selections on page change
+  };
+
+  useEffect(() => {
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, recurringFilter]);
+
   const router = useRouter();
+
   return (
     <div className="space-y-4">
-      {deleteLoading && (<BarLoader className="mt-4" width={"100%"} color="#9333ea"/>)}
+      {deleteLoading && (
+        <BarLoader className="mt-4" width={"100%"} color="#9333ea" />
+      )}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -194,10 +226,7 @@ const TransactionTable = ({ transactions }: any) => {
               <SelectItem value="INCOME">Income</SelectItem>
             </SelectContent>
           </Select>
-          <Select
-            value={recurringFilter}
-            onValueChange={(value) => setRecurringFilter(value)}
-          >
+          <Select value={recurringFilter} onValueChange={setRecurringFilter}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Transaction" />
             </SelectTrigger>
@@ -214,7 +243,6 @@ const TransactionTable = ({ transactions }: any) => {
                 size="sm"
                 onClick={handleBulkDelete}
               >
-                {" "}
                 <Trash className="h-4 w-4" /> Delete Selected (
                 {selectedIds.length})
               </Button>
@@ -228,7 +256,7 @@ const TransactionTable = ({ transactions }: any) => {
               onClick={handleClearFilters}
               title="Clear Filters"
             >
-              <X className="h-4 w-15" />
+              <X className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -241,9 +269,8 @@ const TransactionTable = ({ transactions }: any) => {
                 <Checkbox
                   onCheckedChange={handleSelectAll}
                   checked={
-                    selectedIds.length ===
-                      filteredAndSortedTransactions.length &&
-                    filteredAndSortedTransactions.length > 0
+                    selectedIds.length === currentTransactions.length &&
+                    currentTransactions.length > 0
                   }
                 />
               </TableHead>
@@ -255,9 +282,9 @@ const TransactionTable = ({ transactions }: any) => {
                   Date{" "}
                   {sortConfig.field === "date" &&
                     (sortConfig.direction === "asc" ? (
-                      <ChevronUp className="m1-1 h-4 w-4" />
+                      <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
-                      <ChevronDown className="m1-1 h-4 w-4" />
+                      <ChevronDown className="ml-1 h-4 w-4" />
                     ))}
                 </div>
               </TableHead>
@@ -270,9 +297,9 @@ const TransactionTable = ({ transactions }: any) => {
                   Category{" "}
                   {sortConfig.field === "category" &&
                     (sortConfig.direction === "asc" ? (
-                      <ChevronUp className="m1-1 h-4 w-4" />
+                      <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
-                      <ChevronDown className="m1-1 h-4 w-4" />
+                      <ChevronDown className="ml-1 h-4 w-4" />
                     ))}
                 </div>
               </TableHead>
@@ -284,9 +311,9 @@ const TransactionTable = ({ transactions }: any) => {
                   Amount{" "}
                   {sortConfig.field === "amount" &&
                     (sortConfig.direction === "asc" ? (
-                      <ChevronUp className="m1-1 h-4 w-4" />
+                      <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
-                      <ChevronDown className="m1-1 h-4 w-4" />
+                      <ChevronDown className="ml-1 h-4 w-4" />
                     ))}
                 </div>
               </TableHead>
@@ -295,7 +322,7 @@ const TransactionTable = ({ transactions }: any) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedTransactions.length === 0 ? (
+            {currentTransactions.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={7}
@@ -305,7 +332,7 @@ const TransactionTable = ({ transactions }: any) => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredAndSortedTransactions.map((transaction: any) => (
+              currentTransactions.map((transaction: any) => (
                 <TableRow key={transaction.id}>
                   <TableCell>
                     <Checkbox
@@ -345,7 +372,7 @@ const TransactionTable = ({ transactions }: any) => {
                           <TooltipTrigger>
                             <Badge
                               variant="outline"
-                              className="gap-1 bg-purple-100 text-purple-700 hover:bg-purple-2001"
+                              className="gap-1 bg-purple-100 text-purple-700 hover:bg-purple-200"
                             >
                               <RefreshCcw className="h-3 w-3" />
                               {
@@ -378,12 +405,13 @@ const TransactionTable = ({ transactions }: any) => {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8">
-                          <MoreHorizontalIcon className="h-8 w-8" />
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontalIcon className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuLabel
+                          className="cursor-pointer"
                           onClick={() => {
                             router.push(
                               `/transaction/create?edit=${transaction.id}`
@@ -408,6 +436,30 @@ const TransactionTable = ({ transactions }: any) => {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
