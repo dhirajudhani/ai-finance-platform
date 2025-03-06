@@ -40,17 +40,14 @@ export async function getCurrentBudget(accountId) {
       where: {
         userId: user.id,
         type: "EXPENSE",
-        date: {
-          gte: startOfMonth,
-          lte: endOfMonth,
-        },
         accountId,
       },
       _sum: {
         amount: true,
       },
     });
-    console.log(expenses)
+    console.log("trying ", expenses)
+    console.log("sum",expenses._sum.amount)
     return {
       budget: budget ? { ...budget, amount: budget.amount.toNumber() } : null,
       currentExpenses: expenses._sum.amount
