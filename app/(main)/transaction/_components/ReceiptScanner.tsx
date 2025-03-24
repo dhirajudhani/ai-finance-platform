@@ -7,8 +7,12 @@ import { toast } from "sonner";
 import useFetch from "@/hooks/useFetch";
 import { scanReceipt } from "@/actions/transaction";
 
-export function ReceiptScanner({ onScanComplete }) {
-  const fileInputRef = useRef(null);
+interface ReceiptScannerProps {
+  onScanComplete: (data: any) => void;  // Replace 'any' with your actual data type if known
+}
+
+export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     loading: scanReceiptLoading,
@@ -16,7 +20,7 @@ export function ReceiptScanner({ onScanComplete }) {
     data: scannedData,
   } = useFetch(scanReceipt);
 
-  const handleReceiptScan = async (file) => {
+  const handleReceiptScan = async (file : any) => {
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File size should be less than 5MB");
       return;

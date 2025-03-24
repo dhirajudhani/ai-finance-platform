@@ -1,12 +1,19 @@
-import { getAccountWithTransaction } from "@/actions/accounts";
+import { getAccountWithTransactions } from "@/actions/accounts";
 import { notFound } from "next/navigation";
 import React, { Suspense } from "react";
 import TransactionTable from "../_components/TransactionTable";
 import { BarLoader } from "react-spinners";
 import AccountChart from "../_components/AccountChart";
 
-const AccountPage = async ({ params }: any) => {
-  const accountData = await getAccountWithTransaction(params.id);
+const ErrorFallback = () => (
+  <div className="text-center p-4 text-red-500">
+    Error loading chart data. Please try refreshing the page.
+  </div>
+);
+
+const AccountPage = async ({ params }: { params: { id: string } }) => {
+  const id = params.id;
+  const accountData = await getAccountWithTransactions(id);
   if (!accountData) {
     notFound();
   }
@@ -37,18 +44,18 @@ const AccountPage = async ({ params }: any) => {
           </div>
         </div>
       </div>
-      <Suspense
-        fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}
-      >
-        <AccountChart 
-        transactions={transactions}
-         />
-      </Suspense>
-      <Suspense
-        fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}
-      >
-        <TransactionTable transactions={transactions} />
-      </Suspense>
+     
+        <Suspense
+          fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}
+        >
+          <AccountChart transactions={transactions} />
+        </Suspense>
+      
+        <Suspense
+          fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}
+        >
+          <TransactionTable transactions={transactions} />
+        </Suspense>
     </div>
   );
 };

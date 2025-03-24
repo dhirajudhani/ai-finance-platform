@@ -37,8 +37,17 @@ const DATE_RANGES: any = {
   ALL: { label: "All Time", days: null },
 };
 
-const AccountChart = ({ transactions }: any) => {
-  const [dateRange, setDateRange] = useState<any>("1M");
+interface TransactionProps {
+  transactions: {
+    id: string;
+    type: string;
+    amount: number;
+    date: string;
+  }[];
+}
+
+const AccountChart = ({ transactions }: TransactionProps) => {
+  const [dateRange, setDateRange] = useState<string>("1M");
 
   const filteredData = useMemo(() => {
     const range = DATE_RANGES[dateRange];
@@ -48,25 +57,25 @@ const AccountChart = ({ transactions }: any) => {
       : startOfDay(new Date(0));
 
     const filtered = transactions.filter(
-      (t: any) =>
+      (t) =>
         new Date(t.date) >= startDate && new Date(t.date) <= endOfDay(now)
     );
-    const grouped = filtered.reduce((acc: any, transaction: any) => {
+
+    const grouped = filtered.reduce((acc, transaction) => {
       const date = format(new Date(transaction.date), "MMM dd");
       if (!acc[date]) {
         acc[date] = { date, income: 0, expense: 0 };
       }
       if (transaction.type === "INCOME") {
-        acc[date].income += transaction.amount;
+        acc[date].income += Number(transaction.amount);
       } else {
-        acc[date].expense += transaction.amount;
+        acc[date].expense += Number(transaction.amount);
       }
       return acc;
-    }, {});
+    }, {} as Record<string, { date: string; income: number; expense: number }>);
 
-    // Convert to array and sort by date
     return Object.values(grouped).sort(
-      (a: any, b: any) =>
+      (a, b) =>
         new Date(a.date).valueOf() - new Date(b.date).valueOf()
     );
   }, [transactions, dateRange]);
@@ -83,25 +92,23 @@ const AccountChart = ({ transactions }: any) => {
 
   console.log(filteredData);
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
-        <CardTitle className="text-base font-normal">
-          Transaction Overview
-        </CardTitle>
-        <Select defaultValue={dateRange} onValueChange={setDateRange}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Select Range" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(DATE_RANGES).map(([key, { label }]: any) => {
-              return (
+    <Card className="mt-8">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Transaction Analysis</CardTitle>
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select range" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(DATE_RANGES).map(([key, { label }]) => (
                 <SelectItem key={key} value={key}>
                   {label}
                 </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="flex justify-around mb-6 text-sm">
@@ -130,46 +137,16 @@ const AccountChart = ({ transactions }: any) => {
             </p>
           </div>
         </div>
-        <div className="h-[300px]">
+        <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={filteredData}
-              margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey="date"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `Rs ${value}`}
-              />
-              <Tooltip
-                formatter={(value) => [`Rs ${value}`, undefined]}
-                contentStyle={{
-                  backgroundColor: "hsl(var(--popover))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "var(--radius)",
-                }}
-              />
+            <BarChart data={filteredData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
               <Legend />
-              <Bar
-                dataKey="income"
-                name="Income"
-                fill="#22c55e"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="expense"
-                name="Expense"
-                fill="#ef4444"
-                radius={[4, 4, 0, 0]}
-              />
+              <Bar dataKey="income" fill="#22c55e" name="Income" />
+              <Bar dataKey="expense" fill="#ef4444" name="Expense" />
             </BarChart>
           </ResponsiveContainer>
         </div>

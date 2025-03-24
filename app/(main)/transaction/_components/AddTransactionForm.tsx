@@ -29,13 +29,34 @@ import { cn } from "@/lib/utils";
 import { createTransaction, updateTransaction } from "@/actions/transaction";
 import { transactionSchema } from "@/app/lib/schema";
 import CreateAccountDrawer from "@/components/CreateAccountDrawer";
-import ReceiptScanner from "./ReceiptScanner";
+import { ReceiptScanner } from "./ReceiptScanner";
+
+interface Account {
+  id: string;
+  name: string;
+  balance: string;
+  isDefault?: boolean;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  type: string;
+  color: string;
+  icon: string;
+  subcategories?: string[];
+}
 
 export function AddTransactionForm({
   accounts,
   categories,
   editMode = false,
   initialData = null,
+}: {
+  accounts: Account[];
+  categories: Category[];
+  editMode?: boolean;
+  initialData?: any | null;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,7 +102,7 @@ export function AddTransactionForm({
     data: transactionResult,
   } = useFetch(editMode ? updateTransaction : createTransaction);
 
-  const onSubmit = (data) => {
+  const onSubmit = (data : any) => {
     const formData = {
       ...data,
       amount: parseFloat(data.amount),
@@ -94,7 +115,7 @@ export function AddTransactionForm({
     }
   };
 
-  const handleScanComplete = (scannedData) => {
+  const handleScanComplete = (scannedData : any) => {
     if (scannedData) {
       setValue("amount", scannedData.amount.toString());
       setValue("date", new Date(scannedData.date));
@@ -149,7 +170,7 @@ export function AddTransactionForm({
           </SelectContent>
         </Select>
         {errors.type && (
-          <p className="text-sm text-red-500">{errors.type.message}</p>
+          <p className="text-sm text-red-500">{errors.type.message?.toString()}</p>
         )}
       </div>
 
@@ -164,7 +185,7 @@ export function AddTransactionForm({
             {...register("amount")}
           />
           {errors.amount && (
-            <p className="text-sm text-red-500">{errors.amount.message}</p>
+            <p className="text-sm text-red-500">{errors.amount.message?.toString()}</p>
           )}
         </div>
 
@@ -194,7 +215,7 @@ export function AddTransactionForm({
             </SelectContent>
           </Select>
           {errors.accountId && (
-            <p className="text-sm text-red-500">{errors.accountId.message}</p>
+            <p className="text-sm text-red-500">{errors.accountId.message?.toString()}</p>
           )}
         </div>
       </div>
@@ -218,7 +239,7 @@ export function AddTransactionForm({
           </SelectContent>
         </Select>
         {errors.category && (
-          <p className="text-sm text-red-500">{errors.category.message}</p>
+          <p className="text-sm text-red-500">{errors.category.message?.toString()}</p>
         )}
       </div>
 
@@ -251,7 +272,7 @@ export function AddTransactionForm({
           </PopoverContent>
         </Popover>
         {errors.date && (
-          <p className="text-sm text-red-500">{errors.date.message}</p>
+          <p className="text-sm text-red-500">{errors.date.message?.toString()}</p>
         )}
       </div>
 
@@ -260,7 +281,7 @@ export function AddTransactionForm({
         <label className="text-sm font-medium">Description</label>
         <Input placeholder="Enter description" {...register("description")} />
         {errors.description && (
-          <p className="text-sm text-red-500">{errors.description.message}</p>
+          <p className="text-sm text-red-500">{errors.description.message?.toString()}</p>
         )}
       </div>
 
@@ -298,7 +319,7 @@ export function AddTransactionForm({
           </Select>
           {errors.recurringInterval && (
             <p className="text-sm text-red-500">
-              {errors.recurringInterval.message}
+              {errors.recurringInterval.message?.toString()}
             </p>
           )}
         </div>
