@@ -1,6 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { Pencil, Check, X } from "lucide-react";
+import useFetch from "@/hooks/useFetch";
+import { toast } from "sonner";
+
 import {
   Card,
   CardContent,
@@ -8,23 +12,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import useFetch from "@/hooks/useFetch";
-import { Check, Pencil, X } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { updateBudget } from "@/actions/budget";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { updateBudget } from "@/actions/budget";
 
-const BudgetProgress = ({ initialBudget, currentExpenses }: any) => {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [newBudget, setNewBudget] = useState<any>(
+export function BudgetProgress({ initialBudget, currentExpenses }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [newBudget, setNewBudget] = useState(
     initialBudget?.amount?.toString() || ""
   );
-
-  const percentUsed = initialBudget
-    ? (currentExpenses / initialBudget.amount) * 100
-    : 0;
 
   const {
     loading: isLoading,
@@ -33,15 +30,24 @@ const BudgetProgress = ({ initialBudget, currentExpenses }: any) => {
     error,
   } = useFetch(updateBudget);
 
+  const percentUsed = initialBudget
+    ? (currentExpenses / initialBudget.amount) * 100
+    : 0;
+
   const handleUpdateBudget = async () => {
     const amount = parseFloat(newBudget);
 
     if (isNaN(amount) || amount <= 0) {
-      toast.error("please enter a valid number");
+      toast.error("Please enter a valid amount");
       return;
     }
 
     await updateBudgetFn(amount);
+  };
+
+  const handleCancel = () => {
+    setNewBudget(initialBudget?.amount?.toString() || "");
+    setIsEditing(false);
   };
 
   useEffect(() => {
@@ -57,15 +63,13 @@ const BudgetProgress = ({ initialBudget, currentExpenses }: any) => {
     }
   }, [error]);
 
-  const handleCancel = () => {
-    setNewBudget(initialBudget?.amount?.toString() || "");
-    setIsEditing(false);
-  };
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div>
-          <CardTitle>Monthly Budget (Default Account)</CardTitle>
+        <div className="flex-1">
+          <CardTitle className="text-sm font-medium">
+            Monthly Budget (Default Account)
+          </CardTitle>
           <div className="flex items-center gap-2 mt-1">
             {isEditing ? (
               <div className="flex items-center gap-2">
@@ -99,9 +103,9 @@ const BudgetProgress = ({ initialBudget, currentExpenses }: any) => {
               <>
                 <CardDescription>
                   {initialBudget
-                    ? `Rs ${currentExpenses.toFixed(
+                    ? `$${currentExpenses.toFixed(
                         2
-                      )} of Rs ${initialBudget.amount.toFixed(2)} spent`
+                      )} of $${initialBudget.amount.toFixed(2)} spent`
                     : "No budget set"}
                 </CardDescription>
                 <Button
@@ -119,8 +123,18 @@ const BudgetProgress = ({ initialBudget, currentExpenses }: any) => {
       </CardHeader>
       <CardContent>
         {initialBudget && (
-          <div>
-            <Progress value={percentUsed}/>
+          <div className="space-y-2">
+            <Progress
+              value={percentUsed}
+              extrastyles={`${
+                // add to Progress component
+                percentUsed >= 90
+                  ? "bg-red-500"
+                  : percentUsed >= 75
+                    ? "bg-yellow-500"
+                    : "bg-green-500"
+              }`}
+            />
             <p className="text-xs text-muted-foreground text-right">
               {percentUsed.toFixed(1)}% used
             </p>
@@ -129,6 +143,4 @@ const BudgetProgress = ({ initialBudget, currentExpenses }: any) => {
       </CardContent>
     </Card>
   );
-};
-
-export default BudgetProgress;
+}

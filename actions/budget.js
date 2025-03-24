@@ -23,8 +23,7 @@ export async function getCurrentBudget(accountId) {
       },
     });
 
-    //  Get current month's expenses
-
+    // Get current month's expenses
     const currentDate = new Date();
     const startOfMonth = new Date(
       currentDate.getFullYear(),
@@ -36,18 +35,22 @@ export async function getCurrentBudget(accountId) {
       currentDate.getMonth() + 1,
       0
     );
+
     const expenses = await db.transaction.aggregate({
       where: {
         userId: user.id,
         type: "EXPENSE",
+        date: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
         accountId,
       },
       _sum: {
         amount: true,
       },
     });
-    console.log("trying ", expenses)
-    console.log("sum",expenses._sum.amount)
+
     return {
       budget: budget ? { ...budget, amount: budget.amount.toNumber() } : null,
       currentExpenses: expenses._sum.amount
@@ -55,7 +58,7 @@ export async function getCurrentBudget(accountId) {
         : 0,
     };
   } catch (error) {
-    console.log("Error fetching budget:", error);
+    console.error("Error fetching budget:", error);
     throw error;
   }
 }
@@ -86,16 +89,12 @@ export async function updateBudget(amount) {
     });
 
     revalidatePath("/dashboard");
-
     return {
-        success: true,
-        data: { ...budget, amount: budget.amount.toNumber() },
-      };
-  } catch (error) {
-    console.error("Error updating budget: ", error);
-    return {
-      success: false,
-      error: error.message,
+      success: true,
+      data: { ...budget, amount: budget.amount.toNumber() },
     };
+  } catch (error) {
+    console.error("Error updating budget:", error);
+    return { success: false, error: error.message };
   }
 }

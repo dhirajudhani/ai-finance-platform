@@ -1,88 +1,77 @@
-import Hero from "@/components/Hero";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import {
   featuresData,
   howItWorksData,
   statsData,
   testimonialsData,
 } from "@/data/landing";
-import Image from "next/image";
+import HeroSection from "@/components/Hero";
 import Link from "next/link";
 
-export default function Home() {
+const LandingPage = () => {
   return (
-    <div className="m-40">
-      <Hero />
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <HeroSection />
+
+      {/* Stats Section */}
       <section className="py-20 bg-blue-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {statsData.map((statsData, index) => (
+            {statsData.map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-4xl font-bold text-blue-600 mb-2">
-                  {statsData.value}
+                  {stat.value}
                 </div>
-                <div className="text-gray-600">{statsData.label}</div>
+                <div className="text-gray-600">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-20">
+      {/* Features Section */}
+      <section id="features" className="py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">
+          <h2 className="text-3xl font-bold text-center mb-12">
             Everything you need to manage your finances
           </h2>
-          <p className="text-gray-600 text-center max-w-2xl mx-auto mb-16">
-            Powerful features to help you track, manage, and optimize your
-            finances with ease.
-          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuresData.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <Card
-                  key={index}
-                  className="relative hover:shadow-lg transition-shadow duration-300"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex flex-col items-start space-y-4">
-                      <div className="p-3 rounded-lg bg-blue-50">
-                        <Icon className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <h3 className="text-xl font-semibold">{feature.title}</h3>
-                      <p className="text-gray-600 leading-relaxed">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {featuresData.map((feature, index) => (
+              <Card className="p-6" key={index}>
+                <CardContent className="space-y-4 pt-4">
+                  {feature.icon}
+                  <h3 className="text-xl font-semibold">{feature.title}</h3>
+                  <p className="text-gray-600">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
+      {/* How It Works Section */}
       <section className="py-20 bg-blue-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">How It Works</h2>
+          <h2 className="text-3xl font-bold text-center mb-16">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {howItWorksData.map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Icon className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
-                  <p className="text-gray-600"> {step.description}</p>
+            {howItWorksData.map((step, index) => (
+              <div key={index} className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  {step.icon}
                 </div>
-              );
-            })}
+                <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
+                <p className="text-gray-600">{step.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* Testimonials Section */}
       <section id="testimonials" className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-16">
@@ -115,6 +104,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* CTA Section */}
       <section className="py-20 bg-blue-600">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
@@ -136,4 +126,6 @@ export default function Home() {
       </section>
     </div>
   );
-}
+};
+
+export default LandingPage;

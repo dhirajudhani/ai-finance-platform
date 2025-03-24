@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/CreateAccountDrawer.tsx", "actions/dashboard.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/CreateAccountDrawer.jsx", "actions/dashboard.js", "app/(auth)/sign-in/[[...sign-in]]/page.jsx", "app/(auth)/sign-up/[[...sign-up]]/page.jsx", "app/(auth)/layout.jsx", "app/(main)/account/[id]/page.jsx", "app/(main)/account/_components/AccountChart.jsx", "app/(main)/account/_components/TransactionTable.jsx", "app/(main)/dashboard/layout.js", "app/(main)/dashboard/page.jsx", "app/(main)/dashboard/_components/AccountCard.jsx", "app/(main)/dashboard/_components/BudgetProgress.jsx", "app/(main)/layout.js", "app/(main)/transaction/create/page.jsx", "app/(main)/transaction/_components/AddTransactionForm.jsx", "app/(main)/transaction/_components/ReceiptScanner.jsx", "app/api/inngest/route.js", "app/api/seed/route.js", "app/lib/schema.js", "app/layout.js", "app/not-found.jsx", "app/page.jsx", "data/categories.js", "data/landing.js", "emails/template.jsx", "hooks/useFetch.jsx", "lib/inngest/client.js", "lib/inngest/functions.js", "lib/arcjet.js", "lib/checkUser.js", "lib/prisma.js", "lib/utils.js", "components/Header.jsx", "components/Hero.jsx"],
   "exclude": ["node_modules"]
 }

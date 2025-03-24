@@ -3,8 +3,8 @@
 import { db } from "@/lib/prisma";
 import { subDays } from "date-fns";
 
-const ACCOUNT_ID = "9571fcbf-fd80-419b-b5e1-abfc41560368";
-const USER_ID = "c82a85e2-bc35-4245-9bb9-26e2e94d82f3";
+const ACCOUNT_ID = "account-id";
+const USER_ID = "user-id";
 
 // Categories with their typical amount ranges
 const CATEGORIES = {
@@ -41,23 +41,6 @@ function getRandomCategory(type) {
   return { category: category.name, amount };
 }
 
-const serializeDecimal = (obj) => {
-  if (!obj) return obj;
-  
-  const serialized = { ...obj };
-  
-  // Convert known Decimal fields to numbers
-  if (obj.amount) serialized.amount = obj.amount.toNumber();
-  if (obj.balance) serialized.balance = obj.balance.toNumber();
-  
-  // Handle nested transactions if they exist
-  if (obj.transactions) {
-    serialized.transactions = obj.transactions.map(serializeDecimal);
-  }
-  
-  return serialized;
-};
-
 export async function seedTransactions() {
   try {
     // Generate 90 days of transactions
@@ -78,7 +61,7 @@ export async function seedTransactions() {
         const transaction = {
           id: crypto.randomUUID(),
           type,
-          amount: parseFloat(amount),
+          amount,
           description: `${
             type === "INCOME" ? "Received" : "Paid for"
           } ${category}`,
@@ -108,10 +91,10 @@ export async function seedTransactions() {
         data: transactions,
       });
 
-      // Update account balance - convert to number
+      // Update account balance
       await tx.account.update({
         where: { id: ACCOUNT_ID },
-        data: { balance: parseFloat(totalBalance) },
+        data: { balance: totalBalance },
       });
     });
 
